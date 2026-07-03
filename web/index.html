@@ -3,15 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ps2cd Web Preview</title>
+  <title>PS2CD - Web Preview</title>
   <meta name="description" content="Build PS2 CD/DVD images locally in the browser using ps2cd WASM.">
   <link rel="stylesheet" href="./src/css/style.css">
+  <link rel="icon" href="./favicon.ico" sizes="any">
+  <link rel="icon" href="./assets/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
   <main class="shell">
     <section class="hero panel">
       <div>
-        <p class="eyebrow">ps2cd Web Preview</p>
+        <p class="eyebrow">PS2CD - Web Preview</p>
         <h1>Build PS2 homebrew images in your browser.</h1>
         <p class="lead">Load a project ZIP or folder, choose the output media, and export DVD ISO or CD BIN/CUE locally. Files stay in your browser.</p>
       </div>
@@ -27,7 +29,7 @@
           <span>1</span>
           <div>
             <h2>Input</h2>
-            <p>The ZIP root must mirror the disc root. Put SYSTEM.CNF and the boot ELF at the ZIP root.</p>
+            <p>The ZIP root must mirror the disc root. If SYSTEM.CNF is missing, ps2cd can generate one when a root boot ELF is present.</p>
           </div>
         </div>
 
@@ -55,7 +57,7 @@
           <span>2</span>
           <div>
             <h2>Build</h2>
-            <p>This generic page uses SYSTEM.CNF from the uploaded project. Boot-logo fallback is resolved by the site package and the ps2cd core.</p>
+            <p>This page uses SYSTEM.CNF when present, or generates one virtually for minimal ELF-based projects.</p>
           </div>
         </div>
 
@@ -81,7 +83,7 @@
         <span>3</span>
         <div>
           <h2>Output</h2>
-          <p>Download generated files. Large projects may fail because browsers have memory limits.</p>
+          <p>Download generated files. Large projects may fail because browsers have memory limits. If ZIP loading fails, try another browser or an uncompressed ZIP.</p>
         </div>
       </div>
       <div id="output-list" class="output-list"></div>

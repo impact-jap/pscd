@@ -68,6 +68,7 @@ Source publication is planned after public beta validation and compatibility fee
 
 - [GitHub repository](https://github.com/jonnypaes/ps2cd)
 - [GitHub Pages](https://jonnypaes.github.io/ps2cd/)
+- [PS2CD Online](https://jonnypaes.github.io/ps2cd/web/)
 - [Latest release](https://github.com/jonnypaes/ps2cd/releases/latest)
 - [Downloads](https://jonnypaes.github.io/ps2cd/docs/download/)
 

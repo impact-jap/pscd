@@ -512,9 +512,8 @@ function findEndOfCentralDirectory(view) {
   throw new Error('ZIP end of central directory was not found.');
 }
 
-
 function resolveInternalUrl(path) {
-  return new URL(path, import.meta.url);
+  return new URL(path, document.baseURI);
 }
 
 function normalizePath(path) {
