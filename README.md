@@ -1,97 +1,124 @@
-# ps2cd Web/WASM preview
+# ps2cd public open beta
 
 ## Index
 
-- [Purpose](#purpose)
-- [Hosted layout](#hosted-layout)
-- [User input](#user-input)
-- [Developer customization](#developer-customization)
-- [Build output](#build-output)
+- [What this release is](#what-this-release-is)
+- [What is included](#what-is-included)
+- [Integrity files](#integrity-files)
+- [No proprietary assets](#no-proprietary-assets)
+- [Compatibility feedback](#compatibility-feedback)
+- [Source availability](#source-availability)
+- [Links](#links)
 
-## Purpose
+## What this release is
 
-This folder contains the browser UI for the ps2cd Web/WASM preview.
+`ps2cd` v0.1.X is a public open beta for deterministic PS2 CD/DVD image building.
 
-The web package is intentionally simple: it loads user files, applies optional site-level customization, calls the WASM exporter, and downloads the generated output.
+The purpose of this beta is to validate real-world compatibility before locking a broader public development surface.
 
-## Hosted layout
+## What is included
 
-The app is self-contained under this folder:
+The release line includes:
 
-```text
-web/
-  index.html
-  boot.bmp              optional site-level boot-logo override
-  dist/
-    ps2cd.js
-    ps2cd_bg.wasm
-  src/js/
-    app.js
-    config.js
-  src/css/
-    style.css
-  assets/
-    README.md
-```
+- CLI builds for Windows, macOS, Linux, and Android userspace.
+- A Web/WASM preview package for browser-based workflows.
+- Documentation for usage, downloads, architecture, compatibility notes, and developer assets.
+- A boot-logo replacement pipeline for local user-provided or developer-provided sources.
+- Release checksums for artifact verification.
 
-Open `index.html` through a local or hosted HTTP server. Direct `file://` loading may fail because browser module and WASM loading require HTTP semantics.
+## Integrity files
 
-## User input
-
-The generic builder expects the uploaded ZIP or selected folder to mirror the intended disc root.
-
-With an existing `SYSTEM.CNF`:
+Every release ZIP has SHA256 verification data:
 
 ```text
-SYSTEM.CNF
-SLUS_123.45
-DATA/
-MODULES/
+SHA256SUMS.txt
+*.zip.sha256
 ```
 
-For homebrew-oriented minimal projects, `SYSTEM.CNF` may be omitted when a root boot ELF is present:
+Use these files to confirm that a downloaded artifact matches the published release.
+
+## No proprietary assets
+
+`ps2cd` does not include proprietary PlayStation assets, extracted boot-logo payloads, or protected logo sector dumps.
+
+Users and project maintainers are responsible for providing their own legally allowed local files when using the tool.
+
+## Compatibility feedback
+
+Useful compatibility reports include:
 
 ```text
-BOOT.ELF
-DATA/
+ps2cd version
+platform used to build the image
+output type
+loader or emulator version
+hardware model, when applicable
+whether the boot logo appeared correctly
+whether the target ELF started correctly
+notes about audio, video, or loading behavior
 ```
 
-In that case, the Web/WASM builder generates `SYSTEM.CNF` inside the virtual build input and does not modify the uploaded files.
+## Source availability
 
-The generic public UI does not ask the user to edit a manifest or choose a boot-logo file.
+This beta is distributed as compiled artifacts and a Web/WASM package first.
 
-## Developer customization
+Source publication is planned after public beta validation and compatibility feedback. This keeps the initial release focused on testing, artifact quality, documentation, and compatibility reports before the development surface is opened more broadly.
 
-A fork can replace `web/boot.bmp` or add files under `web/assets/`.
+## Links
 
-If `web/boot.bmp` is missing, the Rust/WASM core still has a built-in fallback boot logo embedded at `src/boot_logo/assets/ps2cd_boot.bmp` at compile time. The file is optional and exists to make project customization obvious. If the embedded BMP cannot be parsed, the core generates a small `PS2CD` wordmark at runtime as the final fallback.
+- [GitHub repository](https://github.com/jonnypaes/ps2cd)
+- [GitHub Pages](https://jonnypaes.github.io/ps2cd/)
+- [Latest release](https://github.com/jonnypaes/ps2cd/releases/latest)
+- [Downloads](https://jonnypaes.github.io/ps2cd/docs/download/)
 
-## Build output
+## Convenience aliases
 
-CD output:
+`ps2cd` can be copied with another executable name to change safe defaults without changing the binary:
 
-```text
-*.bin
-*.cue
-*.iml
+- `ps2cd`: CD-first default.
+- `ps2dvd`: DVD-first default.
+- `ps2dvd-ntsc`: DVD-first default and NTSC for generated `SYSTEM.CNF`.
+- `ps2dvd-pal`: DVD-first default and PAL for generated `SYSTEM.CNF`.
+
+These names do not inject arbitrary commands. They only select recognized built-in defaults, and explicit CLI flags take precedence.
+
+A single boot ELF can also be used as input. In that case, `ps2cd` creates a minimal virtual project in memory, generates `SYSTEM.CNF`, and writes the requested image without modifying the source directory.
+
+Directories are handled with the same rule: if `SYSTEM.CNF` exists at the project root, it is used as-is; if it is missing and a root boot ELF can be detected, `ps2cd` generates a temporary `SYSTEM.CNF` for the build. Use `init-cnf` when you want to write the generated `SYSTEM.CNF` to disk.
+
+## Compatibility layout
+
+The default beta layout is `packed-legacy`.
+
+`ps2cd` targets the boot executable at LBA `12231` for compatibility-oriented builds. Before placing the boot executable, it tries to pack real project files into the available pre-boot area. It only leaves generated zero padding for the remaining gap.
+
+Use compact output when size matters more than this compatibility layout:
+
+```bash
+ps2cd ./project --compact
+ps2dvd ./project --compact
 ```
 
-DVD output:
+Use a manual boot LBA when needed:
 
-```text
-*.iso
-*.iml
+```bash
+ps2cd ./project --boot-lba 12231
 ```
 
-## Layout
+## Hold mode
 
-The Web build is scoped to `web/` and uses `packed-legacy` layout by default. The boot executable is targeted at LBA `12231`, with real files packed before the boot anchor when possible.
+For drag-and-drop users, the Windows build waits before closing when launched in the simple default path mode. You can also force this behavior on any platform with:
 
-Adjust this in `src/js/config.js`:
-
-```js
-layout: {
-  mode: 'packed-legacy',
-  bootLba: 12231
-}
+```bash
+ps2cd ./project --hold
 ```
+
+or by using a `*-hold` executable alias when available.
+
+### Windows drag-and-drop metadata
+
+Windows builds include PE metadata that describes the drag-and-drop workflow. The executable also links with Large Address Aware enabled for native large-image workflows on supported Windows targets.
+
+### Generated homebrew boot names
+
+When `SYSTEM.CNF` must be generated for an arbitrary `.ELF`, ps2cd creates a virtual Disc-ID-style boot name using the `PSCD_000.01` fallback. Existing `SYSTEM.CNF` files are still respected when building a directory.
